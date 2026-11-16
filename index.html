@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TenderLift Lead Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#1e2a3a; --blue:#2563eb; --red:#DA291C; --ink:#0a0a0a; --body:#171717;
+  --g500:#737373; --g300:#d4d4d4; --g200:#e5e5e5; --g100:#f5f5f5; --white:#fff;
+  --card:#ffffff; --bg:#f5f5f5; --line:rgba(0,0,0,.07);
+  --ok:#15803d; --okbg:#ecfdf3; --warn:#a16207; --warnbg:#fefce8; --info:#1d4ed8; --infobg:#eff6ff; --mute:#525252; --mutebg:#f4f4f5;
+  --radius:18px;
+  --spring:cubic-bezier(.2,.9,.25,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--body);font:16px/1.5 "IBM Plex Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* Header — translucent material */
+.bar{position:sticky;top:0;z-index:20;background:rgba(245,245,245,.72);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid var(--line)}
+.bar-in{max-width:1240px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.logo{height:22px;color:var(--ink);display:block}
+.eyebrow{font-size:12px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--g500)}
+.bar .eyebrow{margin-left:auto}
+
+.wrap{max-width:1240px;margin:0 auto;padding:32px 24px 64px}
+h1{font-size:clamp(28px,4vw,44px);line-height:1.08;letter-spacing:-.02em;font-weight:600;color:var(--navy);margin:0 0 6px}
+.sub{color:var(--g500);font-size:15px;margin:0 0 28px}
+
+/* KPI tiles */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:18px}
+.tile{background:var(--card);border-radius:var(--radius);padding:18px 20px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(30,42,58,.05);border:1px solid var(--line)}
+.tile .lab{font-size:13px;font-weight:500;color:var(--g500)}
+.tile .val{font-family:"IBM Plex Mono",monospace;font-size:34px;font-weight:500;letter-spacing:-.02em;color:var(--navy);line-height:1.15;margin-top:4px}
+.tile .note{font-size:13px;color:var(--g500);margin-top:4px}
+.tile .src{font-size:11px;color:var(--g500);margin-top:10px;letter-spacing:.02em}
+.tile.navy{background:var(--navy);border-color:var(--navy)}
+.tile.navy .lab,.tile.navy .note,.tile.navy .src{color:rgba(255,255,255,.66)}
+.tile.navy .val{color:#fff}
+
+/* Funnel */
+.panel{background:var(--card);border-radius:var(--radius);border:1px solid var(--line);box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(30,42,58,.05);padding:22px 24px;margin-bottom:18px}
+.sec{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--navy);margin:0 0 14px}
+.sec::before{content:"";width:18px;height:3px;border-radius:2px;background:var(--navy)}
+.funnel{display:grid;gap:10px}
+.frow{display:grid;grid-template-columns:150px 1fr 90px;align-items:center;gap:14px;font-size:14px}
+.ftrack{height:28px;background:var(--g100);border-radius:9px;overflow:hidden}
+.fbar{height:100%;border-radius:9px;background:var(--navy);transform-origin:left;transform:scaleX(0);transition:transform .9s var(--spring)}
+.fbar.b{background:var(--blue)}
+.fbar.l{background:#94a3b8}
+.frow .n{text-align:right}
+.split{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}
+@media (max-width:900px){.split{grid-template-columns:1fr}.frow{grid-template-columns:110px 1fr 70px}}
+.mini{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.mini div{background:var(--g100);border-radius:12px;padding:12px 14px}
+.mini b{display:block;font-family:"IBM Plex Mono",monospace;font-weight:500;font-size:22px;color:var(--navy)}
+.mini span{font-size:12.5px;color:var(--g500)}
+
+/* Segmented control */
+.controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:28px 0 14px}
+.seg{position:relative;display:inline-grid;grid-auto-flow:column;grid-auto-columns:1fr;background:rgba(0,0,0,.06);border-radius:11px;padding:3px}
+.seg button{position:relative;z-index:1;appearance:none;border:0;background:transparent;font:500 14px "IBM Plex Sans",sans-serif;color:var(--body);padding:8px 16px;border-radius:9px;cursor:pointer;white-space:nowrap;transition:transform .1s ease-out}
+.seg button:active{transform:scale(.97)}
+.seg button .c{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--g500);margin-left:6px}
+.seg .thumb{position:absolute;z-index:0;top:3px;bottom:3px;left:3px;border-radius:9px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12),0 3px 8px rgba(0,0,0,.06);transition:transform .45s var(--spring),width .45s var(--spring)}
+.search{flex:1;min-width:200px;max-width:340px;margin-left:auto;position:relative}
+.search input{width:100%;font:15px "IBM Plex Sans",sans-serif;padding:9px 12px 9px 34px;border-radius:11px;border:1px solid transparent;background:rgba(0,0,0,.06);outline:none;transition:background .15s,border-color .15s}
+.search input:focus{background:#fff;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.15)}
+.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--g500)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.chip{appearance:none;border:1px solid var(--g200);background:#fff;border-radius:999px;padding:5px 12px;font:500 13px "IBM Plex Sans",sans-serif;color:var(--body);cursor:pointer;transition:transform .1s ease-out,background .15s}
+.chip:active{transform:scale(.96)}
+.chip[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+/* Tables */
+.view{display:none}
+.view.on{display:block;animation:rise .35s var(--spring)}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.tablewrap{background:var(--card);border-radius:var(--radius);border:1px solid var(--line);box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(30,42,58,.05);overflow:auto}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}
+thead th{position:sticky;top:0;background:var(--navy);color:#fff;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;text-align:left;padding:11px 14px;white-space:nowrap}
+tbody td{padding:11px 14px;border-bottom:1px solid var(--g100);vertical-align:top}
+tbody tr:nth-child(even) td{background:#fafafa}
+tbody tr:hover td{background:#f1f5ff}
+td.num,th.num{text-align:right}
+.co{font-weight:600;color:var(--ink)}
+.small{font-size:12.5px;color:var(--g500)}
+.pill{display:inline-block;font-size:12px;font-weight:500;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.p-ok{background:var(--okbg);color:var(--ok)}
+.p-warn{background:var(--warnbg);color:var(--warn)}
+.p-info{background:var(--infobg);color:var(--info)}
+.p-mute{background:var(--mutebg);color:var(--mute)}
+.p-navy{background:var(--navy);color:#fff}
+.empty{padding:28px;text-align:center;color:var(--g500)}
+.foot{margin-top:36px;padding-top:14px;border-top:1px solid var(--g300);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--g500)}
+.foot b{color:var(--blue);font-weight:500}
+.srcbox{margin-top:18px;font-size:13px;color:var(--g500);background:var(--card);border-radius:14px;border:1px solid var(--line);padding:14px 18px}
+.srcbox ul{margin:6px 0 0;padding-left:18px}
+
+@media (prefers-reduced-motion:reduce){
+  .fbar,.seg .thumb{transition:none}
+  .view.on{animation:none}
+}
+@media (prefers-reduced-transparency:reduce){.bar{background:var(--g100);backdrop-filter:none}}
+</style>
+</head>
+<body>
+
+<header class="bar"><div class="bar-in">
+  <svg class="logo" viewBox="0 0 357 68" aria-label="tenderlift" role="img" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0.27832 30.8838V20.7324H7.74512V14.3032H19.626V50.8105C19.626 54.1191 21.0798 55.7734 23.9873 55.7734H29.1006V66H22.4834C12.6579 66 7.74512 61.1624 7.74512 51.4873V30.8838H0.27832Z" fill="currentColor"/>
+    <path d="M33.6123 43.2158C33.6123 35.8467 35.6676 30.0316 39.7783 25.7705C43.889 21.5094 48.9772 19.3789 55.043 19.3789C60.9082 19.3789 65.8711 21.5846 69.9316 25.9961C74.0423 30.3574 76.0977 36.0973 76.0977 43.2158C76.0977 44.6696 76.0225 46.1234 75.8721 47.5771H45.7939C45.7939 50.4346 46.6963 52.8659 48.501 54.8711C50.3057 56.8262 52.737 57.8037 55.7949 57.8037C58.0508 57.8037 60.0059 57.2523 61.6602 56.1494C63.3646 54.9964 64.6429 53.5426 65.4951 51.7881L75.4961 55.3223C73.9922 58.681 71.5358 61.5384 68.127 63.8945C64.7181 66.2005 60.4821 67.3535 55.4189 67.3535C49.0524 67.3535 43.8138 65.1729 39.7031 60.8115C35.6426 56.4502 33.6123 50.585 33.6123 43.2158ZM45.8691 39.3809H63.8408C63.8408 36.4733 63.0638 33.9919 61.5098 31.9365C60.0059 29.8311 57.8503 28.7783 55.043 28.7783C52.1855 28.7783 49.9297 29.8311 48.2754 31.9365C46.6712 34.042 45.8691 36.5234 45.8691 39.3809Z" fill="currentColor"/>
+    <path d="M82.8652 66V20.7324H94.3701V25.1689H94.4453C96.9017 21.3089 100.737 19.3789 105.95 19.3789C115.926 19.3789 120.914 25.2441 120.914 36.9746V66H108.958V38.4033C108.958 35.195 108.507 32.9391 107.604 31.6357C106.702 30.2822 105.273 29.6055 103.318 29.6055C100.812 29.6055 98.7816 30.6331 97.2275 32.6885C95.6735 34.6937 94.8965 37.2253 94.8965 40.2832V66H82.8652Z" fill="currentColor"/>
+    <path d="M127.306 43.291C127.306 35.8216 129.11 29.9814 132.72 25.7705C136.379 21.5094 141.066 19.3789 146.781 19.3789C150.992 19.3789 154.376 20.9329 156.933 24.041V2.53516H168.889V66H157.233V61.4883C156.331 63.0423 154.902 64.4209 152.947 65.624C150.992 66.777 148.912 67.3535 146.706 67.3535C144.3 67.3535 141.969 66.9023 139.713 66C137.507 65.0977 135.452 63.7441 133.547 61.9395C131.642 60.1348 130.113 57.6283 128.96 54.4199C127.857 51.2116 127.306 47.502 127.306 43.291ZM139.638 43.291C139.638 47.7526 140.415 51.1865 141.969 53.5928C143.573 55.9489 145.729 57.127 148.436 57.127C151.092 57.127 153.173 55.8988 154.677 53.4424C156.231 50.986 157.008 47.6022 157.008 43.291C157.008 39.1803 156.281 35.8717 154.827 33.3652C153.373 30.8587 151.243 29.6055 148.436 29.6055C145.528 29.6055 143.322 30.8587 141.818 33.3652C140.365 35.8216 139.638 39.1302 139.638 43.291Z" fill="currentColor"/>
+    <path d="M176.258 43.2158C176.258 35.8467 178.313 30.0316 182.424 25.7705C186.535 21.5094 191.623 19.3789 197.688 19.3789C203.554 19.3789 208.517 21.5846 212.577 25.9961C216.688 30.3574 218.743 36.0973 218.743 43.2158C218.743 44.6696 218.668 46.1234 218.518 47.5771H188.439C188.439 50.4346 189.342 52.8659 191.146 54.8711C192.951 56.8262 195.382 57.8037 198.44 57.8037C200.696 57.8037 202.651 57.2523 204.306 56.1494C206.01 54.9964 207.288 53.5426 208.141 51.7881L218.142 55.3223C216.638 58.681 214.181 61.5384 210.772 63.8945C207.364 66.2005 203.128 67.3535 198.064 67.3535C191.698 67.3535 186.459 65.1729 182.349 60.8115C178.288 56.4502 176.258 50.585 176.258 43.2158ZM188.515 39.3809H206.486C206.486 36.4733 205.709 33.9919 204.155 31.9365C202.651 29.8311 200.496 28.7783 197.688 28.7783C194.831 28.7783 192.575 29.8311 190.921 31.9365C189.317 34.042 188.515 36.5234 188.515 39.3809Z" fill="currentColor"/>
+    <path d="M225.511 66V20.7324H237.016V24.5674C237.968 23.1637 239.322 21.9606 241.076 20.958C242.881 19.9053 244.886 19.3789 247.092 19.3789C249.699 19.3789 251.553 19.6546 252.656 20.2061V31.1846C250.902 30.6331 249.047 30.3574 247.092 30.3574C243.883 30.3574 241.477 31.6107 239.873 34.1172C238.319 36.6237 237.542 39.9824 237.542 44.1934V66H225.511Z" fill="currentColor"/>
+    <path d="M257.92 66V2.53516H269.951V66H257.92Z" fill="currentColor"/>
+    <path d="M280.403 15.9199V3.58789H292.51V15.9199H280.403ZM280.554 66V20.7324H292.435V66H280.554Z" fill="currentColor"/>
+    <path d="M299.428 30.8838V20.7324H305.895V16.9727C305.895 12.2103 307.073 8.62598 309.429 6.21973C311.785 3.76335 315.169 2.53516 319.58 2.53516H327.551V12.8369H321.46C320.207 12.8369 319.304 13.2129 318.753 13.9648C318.201 14.7168 317.926 15.9701 317.926 17.7246V20.7324H327.573V30.8838H317.926V66H305.895V30.8838H299.428Z" fill="currentColor"/>
+    <path d="M327.573 30.8838V20.7324H334.995V7.87402H346.876V20.7324H356.275V30.8838H346.876V50.8105C346.876 54.1191 348.33 55.7734 351.237 55.7734H356.351V66H349.733C339.908 66 334.995 61.1624 334.995 51.4873V30.8838H327.573Z" fill="currentColor"/>
+    <path d="M14 8.9407e-07L24 0V10H14V8.9407e-07Z" fill="#DA291C"/>
+    <path d="M24 20V0H34V20H24Z" fill="#DA291C"/>
+  </svg>
+  <span class="eyebrow">Lead Dashboard · As of 16 Nov 2026, 09:00</span>
+</div></header>
+
+<main class="wrap">
+  <h1>All inbound leads at a glance</h1>
+  <p class="sub">Preview leads (follow-up) · Sign-ups · Lusha pricing-page visitors — last 30 days (17 Oct – 16 Nov 2026)</p>
+
+  <section class="kpis" id="kpis">
+    <div class="tile navy"><div class="lab">Preview leads created</div><div class="val">855</div><div class="note">801 opened · 1,725 views</div><div class="src">TenderLift · get_lead_funnel (30 d)</div></div>
+    <div class="tile"><div class="lab">Preview → Sign-up</div><div class="val">96</div><div class="note">Conversion rate 11.23%</div><div class="src">TenderLift · get_lead_funnel (30 d)</div></div>
+    <div class="tile"><div class="lab">New sign-ups</div><div class="val">123</div><div class="note">16 attributed · 107 direct</div><div class="src">TenderLift · get_lead_funnel (30 d)</div></div>
+    <div class="tile"><div class="lab">CRM hot queue</div><div class="val">51</div><div class="note"><span id="k-unowned">–</span> without owner</div><div class="src">TenderLift · list_outreach_contacts (queue=hot)</div></div>
+    <div class="tile"><div class="lab">Pricing page (Lusha)</div><div class="val">19</div><div class="note">companies identified · 30 d</div><div class="src">Lusha · website_visits_search</div></div>
+  </section>
+
+  <section class="split">
+    <div class="panel" id="funnel">
+      <h2 class="sec">Preview funnel · 30 days</h2>
+      <div class="funnel">
+        <div class="frow"><span>Created</span><div class="ftrack"><div class="fbar" data-v="855"></div></div><span class="n mono">855</span></div>
+        <div class="frow"><span>Opened</span><div class="ftrack"><div class="fbar" data-v="801"></div></div><span class="n mono">801</span></div>
+        <div class="frow"><span>Active (not expired)</span><div class="ftrack"><div class="fbar l" data-v="550"></div></div><span class="n mono">550</span></div>
+        <div class="frow"><span>Expired</span><div class="ftrack"><div class="fbar l" data-v="205"></div></div><span class="n mono">205</span></div>
+        <div class="frow"><span>Converted</span><div class="ftrack"><div class="fbar b" data-v="96"></div></div><span class="n mono">96</span></div>
+      </div>
+      <p class="small" style="margin:14px 0 0">Median time to convert: <span class="mono">2.5 min</span> · Avg. views per lead: <span class="mono">2.02</span> · Stage “engaged” returns <span class="mono">0</span> (as reported by the tool).</p>
+    </div>
+    <div class="panel" id="crm">
+      <h2 class="sec">CRM pipeline overall</h2>
+      <div class="mini">
+        <div><b>2,222</b><span>Total contacts</span></div>
+        <div><b>1,704</b><span>Identified</span></div>
+        <div><b>318</b><span>Contacted</span></div>
+        <div><b>26</b><span>Replied</span></div>
+        <div><b>18 / 9</b><span>Demo booked / done</span></div>
+        <div><b>13 / 3</b><span>Trial active / Pilot</span></div>
+        <div><b>2,065</b><span>Stale loops</span></div>
+        <div><b>45</b><span>Recently added</span></div>
+      </div>
+      <p class="small" style="margin:12px 0 0">Source: TenderLift CRM stats (list_outreach_contacts)</p>
+    </div>
+  </section>
+
+  <div class="controls">
+    <div class="seg" role="tablist" id="seg">
+      <span class="thumb" id="thumb"></span>
+      <button role="tab" data-v="preview" aria-selected="true">Preview leads<span class="c" id="c-preview"></span></button>
+      <button role="tab" data-v="signups" aria-selected="false">Sign-ups<span class="c" id="c-signups"></span></button>
+      <button role="tab" data-v="lusha" aria-selected="false">Lusha · Pricing<span class="c" id="c-lusha"></span></button>
+    </div>
+    <label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="Search company, contact, domain"></label>
+  </div>
+
+  <!-- PREVIEW -->
+  <section class="view on" id="v-preview">
+    <div class="filters" id="f-preview"></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Date</th><th>Company</th><th>Signal (TenderLift)</th><th>CRM stage</th><th>Owner</th><th>Phone</th><th>Other matches</th></tr></thead>
+      <tbody id="t-preview"></tbody>
+    </table></div>
+    <p class="small" style="margin-top:10px">Inbound preview leads from the TenderLift hot queue without a completed sign-up. Preview leads that signed up are listed under “Sign-ups” (source “Preview”).</p>
+  </section>
+
+  <!-- SIGNUPS -->
+  <section class="view" id="v-signups">
+    <div class="filters" id="f-signups"></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Date</th><th>Company</th><th>Contact</th><th>Domain</th><th>Funnel stage</th><th>Source</th><th>Plan / trial</th></tr></thead>
+      <tbody id="t-signups"></tbody>
+    </table></div>
+    <p class="small" style="margin-top:10px">get_recent_signups (30 d) returns 81 accounts; get_lead_funnel counts 123 new sign-ups — the two tools count differently.</p>
+  </section>
+
+  <!-- LUSHA -->
+  <section class="view" id="v-lusha">
+    <div class="tablewrap"><table>
+      <thead><tr><th>Last visit</th><th>Company</th><th>Location</th><th class="num">Employees</th><th class="num">Pricing views</th><th class="num">Sessions</th><th>Pages</th><th class="num">Lusha score</th><th>Other matches</th></tr></thead>
+      <tbody id="t-lusha"></tbody>
+    </table></div>
+    <p class="small" style="margin-top:10px">Companies Lusha identified on tenderlift.ch that viewed the pricing page (high-intent page “Price”). “Other matches” = cross-check with the TenderLift hot queue, sign-ups and CRM records.</p>
+  </section>
+
+  <div class="srcbox">
+    <b style="color:var(--navy)">Data sources (snapshot 16 Nov 2026, 09:00)</b>
+    <ul>
+      <li>TenderLift Staff MCP — get_lead_funnel (30 d), get_recent_signups (30 d), list_outreach_contacts (hot queue, 51 entries)</li>
+      <li>Lusha — website_visits_search, tenderlift.ch, last 30 days (19 companies)</li>
+      <li>No live updates: figures reflect the time of the query.</li>
+    </ul>
+  </div>
+
+  <footer class="foot"><span>TenderLift · Lead Dashboard</span><b>As of 16 Nov 2026</b></footer>
+</main>
+
+<script>
+/* ---------- DATA ---------- */
+const PREVIEW = [
+ ["2026-11-14","D&A Isolationen GmbH","CHE-484.058.384","First preview open","identified",null,"",""],
+ ["2026-11-14","Emch+Berger AG Bern","CHE-105.960.741","First preview open","identified",null,"+41 58 451 61 11","Lusha pricing 05 Nov · Preview Spiez 10 Nov"],
+ ["2026-11-13","Maxigroup M'Pele","CHE-226.247.371","First preview open","identified",null,"",""],
+ ["2026-11-13","THR Services Sàrl","CHE-186.941.641","Clicked into a tender","identified",null,"","Sign-up with hotmail.fr blocked (13 Nov)"],
+ ["2026-11-12","A&V Sicherheit KLG","CHE-294.844.489","Clicked into a tender","identified",null,"+41 77 927 64 87",""],
+ ["2026-11-12","F. Bernasconi et Cie SA (Puidoux)","CHE-407.692.458","First preview open","identified",null,"+41 21 946 19 88","Existing Bernasconi trial account"],
+ ["2026-11-12","Schenk Systeme AG","CHE-107.246.979","First preview open","identified",null,"+41 41 854 88 88",""],
+ ["2026-11-12","Jvm Bau GmbH","CHE-170.719.522","First preview open","identified",null,"","Demo account 12 Nov"],
+ ["2026-11-12","Luceed SA","CHE-267.373.719","Clicked into a tender","identified",null,"+41 26 525 11 43",""],
+ ["2026-11-11","BitHawk AG","CHE-107.486.673","First preview open","identified",null,"+41 58 226 01 01",""],
+ ["2026-11-11","Celionet Sàrl","CHE-336.196.356","First preview open","identified",null,"+41 76 735 21 72",""],
+ ["2026-11-11","IMM Istituto Meccanica dei Materiali SA","CHE-107.404.706","Clicked into a tender","identified",null,"+41 91 994 83 41",""],
+ ["2026-11-11","NUOVOLAB SA","CHE-110.523.636","First preview open","identified",null,"+41 91 600 11 11","Lusha pricing 11 Nov (IT + EN)"],
+ ["2026-11-10","Bachmann, Stegemann + Partner AG","CHE-239.157.369","Clicked into a tender","identified",null,"",""],
+ ["2026-11-10","Original Food GmbH","CHE-112.254.157","First preview open","identified",null,"+41 41 630 14 01",""],
+ ["2026-11-10","OM Computer-Support AG","CHE-103.876.851","First preview open","identified",null,"+41 41 748 30 50",""],
+ ["2026-11-10","GIPAG AG","CHE-101.672.119","First preview open","identified",null,"+41 81 258 50 70",""],
+ ["2026-11-10","Emch+Berger AG Bern, ZN Spiez","CHE-434.504.393","First preview open","identified",null,"","Lusha pricing 05 Nov"],
+ ["2026-11-10","MD Deckenbau GmbH","CHE-477.642.626","Clicked into a tender","identified",null,"+41 76 433 45 27",""],
+ ["2026-11-09","D ONE Value Creation AG","CHE-112.694.740","First preview open","identified",null,"+41 44 435 10 10",""],
+ ["2026-11-09","virdis architecture sàrl","CHE-112.806.111","First preview open","identified",null,"+41 26 422 38 70",""],
+ ["2026-11-09","Tecton Abdichtungen AG","CHE-106.004.557","First preview open","contacted",null,"+41 31 926 60 60","Instantly Tier B (June)"],
+ ["2026-11-09","Marcel Blanc et Cie S.A.","CHE-107.039.653","First preview open","identified",null,"+41 21 654 30 80","Source fr_tier1"],
+ ["2026-11-09","TOTAL RENOVATION LUTFIU SNC","CHE-492.097.239","First preview open","identified",null,"+41 76 693 67 03",""],
+ ["2026-11-09","LAND Suisse Sagl","CHE-377.725.660","Follow-up overdue","trial_active","Merlin","+41 91 910 26 50","Trial expired 28 Aug"],
+ ["2026-10-26","Aveniq AG","CHE-109.309.220","Follow-up overdue","demo_booked",null,"+41 58 411 77 77","Lusha pricing 26 Oct"],
+ ["2026-10-19","Kilchenmann AG","CHE-106.847.426","Follow-up overdue","replied",null,"+41 31 963 15 15","“Timing no” – check back in autumn"]
+];
+
+// [date, name, company, domain, stage, source, plan, category]  category: k = company, i = demo/internal
+const SIGNUPS = [
+ ["2026-11-16","Alnes Ibric","—","ediksarl.ch","unverified","Direct","","k"],
+ ["2026-11-16","Wear Suba","Suba Group AG","wearsuba.com","active","Direct","Trial until 30 Nov","k"],
+ ["2026-11-16","Suba Group AG","—","warsuba.com","unverified","Preview","Trial until 30 Nov","k"],
+ ["2026-11-15","Roman Neukom","OBT AG","obt.ch","active","Team seat","","k"],
+ ["2026-11-12","Demo Jvm Bau","Jvm Bau GmbH","demo+","verified","Demo account","","i"],
+ ["2026-11-12","Verscheure","Gentianes Group SA","gentianes.ch","active","Direct","","k"],
+ ["2026-11-12","dads","— (CRM: DV Bern AG)","nbasweeps.com","verified","Preview (company_page)","Trial until 26 Nov","k"],
+ ["2026-11-12","Saranda Kolgeci","MZ Dienstleistungs AG","mz-dienstleistungs.ch","active","Direct","Trial until 26 Nov","k"],
+ ["2026-11-12","Saranda Kolgeci","—","mz-dienstleistungs.ag","unverified","Preview","Trial until 26 Nov","k"],
+ ["2026-11-11","Peter Züblin","OBT AG","obt.ch","active","Team seat","Trial until 11 Dec","k"],
+ ["2026-11-11","Demo OBT AG","OBT AG","demo+","verified","Demo account","","i"],
+ ["2026-11-11","Mario Astolfi","Etat de siège Sàrl","etatdesiege.ch","verified","Preview","Repeat trial until 25 Nov","k"],
+ ["2026-11-11","Nisanth Muthukirushnasamy","—","maxsoft.ch","unverified","Direct","","k"],
+ ["2026-11-11","Aryo Sag","AMAG Import AG","amag.ch","verified","Team seat","Trial until 09 Dec","k"],
+ ["2026-11-11","Jennifer Kläy","AMAG Import AG","amag.ch","verified","Team seat","Trial until 09 Dec","k"],
+ ["2026-11-11","Loris Campigotto","AMAG Import AG","amag.ch","active","Team seat","Trial until 09 Dec","k"],
+ ["2026-11-10","Demo Arcade Solutions","Arcade Solutions AG","demo+","verified","Demo account","","i"],
+ ["2026-11-09","Pérez Pineda","FettoNet","fettonet.ch","active","Direct","Trial until 23 Nov","k"],
+ ["2026-11-09","Safet Murtezi","Murtezi AG","murtezi-ag.ch","active","Preview (chatgpt.com)","Pro · active","k"],
+ ["2026-11-09","Roger Beglinger","AMAG Import AG","amag.ch","active","Team seat","Trial until 09 Dec","k"],
+ ["2026-11-09","Isabella Malixi","Singular Group AG","singular.ch","active","Preview (4 views)","Trial until 23 Nov","k"],
+ ["2026-11-06","Mariacher Günther","— (CRM: Mariacher Schweiz AG)","mariacher.ch","verified","Preview","Trial until 20 Nov","k"],
+ ["2026-11-06","Manon Dotigny","—","zendesk.com","verified","Direct","","k"],
+ ["2026-11-05","Demo Ruzicic IT","Ruzicic IT","demo+","verified","Demo account","","i"],
+ ["2026-11-05","Julian Lagorsse","CORROSIA","isgroupe.com","active","Direct","Trial until 12 Dec","k"],
+ ["2026-11-05","Sascha Krucker","—","chargecare.ch","verified","Direct","","k"],
+ ["2026-11-04","Matteo Meni","—","ribo.swiss","verified","Direct","","k"],
+ ["2026-11-04","Demo AMAG Import","AMAG Import AG","demo+","active","Demo account","","i"],
+ ["2026-11-03","Demo Rhomberg Sersa Rail","Rhomberg Sersa Rail AG","demo+","verified","Demo account","","i"],
+ ["2026-11-03","Jeanne Walker","Conaptis GmbH","conaptis.ch","active","Direct","Trial until 17 Nov","k"],
+ ["2026-11-03","Akeksandar Marinov","—","mardex.bg","verified","Direct","","k"],
+ ["2026-11-02","Demo Uliasti","Uliasti GmbH","demo+","verified","Demo account","","i"],
+ ["2026-11-02","franziska gaspar","about solar gmbh","about-solar.de","active","Direct","Trial until 16 Nov","k"],
+ ["2026-11-02","Antoine Vincent","Rolex Holding SA","tenderlift.ch","active","Internal","","i"],
+ ["2026-11-02","Antoine Vincent","—","tenderlift.ch","unverified","Internal","","i"],
+ ["2026-10-31","Ingo Felsbogen","Felsbogen Bau","felsbogen-bau.de","active","Direct","","k"],
+ ["2026-10-31","Andreas Zallmann","In & Out AG","inout.ch","active","Direct","","k"],
+ ["2026-10-30","Artémis Amruthalingam","JCP Marketing et Communication AG","jcp-marketing-event.ch","active","Preview (2 views)","Trial until 10 Dec","k"],
+ ["2026-10-30","Demo Grünenfelder","Grünenfelder SA","demo+","verified","Demo account","","i"],
+ ["2026-10-30","Alina Gamp","HICO Group AG","hico-group.com","active","Direct","","k"],
+ ["2026-10-30","Agonis Shala","Shala Creative","shalacreative.ch","active","Direct","","k"],
+ ["2026-10-29","Bruno Alves","SecureMind Sàrl","securemind.ch","active","Preview","","k"],
+ ["2026-10-29","Hans-Martin Schäfer","—","strategy.com","unverified","Direct","","k"],
+ ["2026-10-28","Kristian Tibold","Tibold Informatik","tibold.ch","active","Direct","","k"],
+ ["2026-10-28","Zoraya Chatrieux","Solstis SA","solstis.ch","active","Team seat","Trial until 26 Nov","k"],
+ ["2026-10-27","Demo VxL","VxL Switzerland SA","demo+","verified","Demo account","","i"],
+ ["2026-10-27","Andrew Bugg","Bureau AB Sàrl","bureauab.ch","active","Preview","Trial expired 10 Nov","k"],
+ ["2026-10-27","Austin Hunt","VxL Switzerland SA","vxlenterprises.com","active","Preview","Trial until 04 Dec","k"],
+ ["2026-10-27","Arsim Idrizi","ARS Pittura Sagl","arspittura.ch","active","Preview (chatgpt.com)","","k"],
+ ["2026-10-26","Nathan Durroux","Dupsy","dupsy.fr","verified","Direct","","k"],
+ ["2026-10-26","Andrew McCornack","Huwer Group","huwer.com","verified","Direct","","k"],
+ ["2026-10-26","Tania","—","tegona.com","verified","Direct","","k"],
+ ["2026-10-26","Baton Shala","Visorway AG","visorway.ai","verified","Direct","","k"],
+ ["2026-10-26","Enrique Duarte","RLJ Ingénieurs Conseils SA","rlj.ch","active","Direct","Trial until 25 Nov","k"],
+ ["2026-10-26","Remi Sabonnadiere","Surelio SA","artefact.com","active","Direct","","k"],
+ ["2026-10-26","Darko Tarlac","DTU Facility Services Tarlac","dtu-fs.ch","verified","Preview","","k"],
+ ["2026-10-26","admineppc","—","eppc.fr","verified","Direct","","k"],
+ ["2026-10-26","Demo SCRASA","SCRASA SA","demo+","verified","Demo account","","i"],
+ ["2026-10-26","Ali Misimi","Danfoss AG","danfoss.com","active","Preview (chatgpt.com)","","k"],
+ ["2026-10-26","Valentin Bieber","Solstis SA","solstis.ch","active","Team seat","","k"],
+ ["2026-10-26","Danilo Santagata","Proapp GmbH","proapp.ch","active","Direct","","k"],
+ ["2026-10-25","Ron Reinicke","M & M Bauservice GmbH","ronreinicke.de","verified","Direct","","k"],
+ ["2026-10-24","Paul-Olivier Dehaye","hestia.ai Sàrl","hestia.ai","active","Direct","","k"],
+ ["2026-10-23","Gioele Piazza","Piazza Giardini","piazzagiardini.ch","verified","Preview (chatgpt.com)","","k"],
+ ["2026-10-23","Thibaut Ramelet","ALETSCHIRT Sàrl","aletschirt.ch","active","Direct","","k"],
+ ["2026-10-22","Thomas Nogueira","SAS NOGS","rendez-vous.ai","active","Direct","","k"],
+ ["2026-10-22","Bernardka Jurič","—","vgp-drava.si","verified","Direct","","k"],
+ ["2026-10-22","Frédéric Bartels","Frédéric Bartels","fredemotion.com","active","Direct","","k"],
+ ["2026-10-22","Demo fux & sarbach","fux & sarbach ENGINEERING AG","demo+","verified","Demo account","","i"],
+ ["2026-10-21","Pascal Eugster","Inoo GmbH","inoo.ch","verified","Preview","","k"],
+ ["2026-10-20","Safiya Bousloh","socraft sa","socraft.ch","active","Direct","","k"],
+ ["2026-10-20","Marco Thomann","Fortis Tech AG","fortis-solar.ch","active","Direct","","k"],
+ ["2026-10-20","Demo Melly Constructions","MELLY CONSTRUCTIONS SA","demo+","verified","Demo account","","i"],
+ ["2026-10-20","Bou","aa (Aarvia Bau AG)","iconcubic.com","active","Direct","","k"],
+ ["2026-10-20","Ronnie Schwegler","UMB AG","umb.ch","active","Team seat","","k"],
+ ["2026-10-19","Marko Zlatkovic","MZ Facility Services","mzfacility.ch","active","Direct","","k"],
+ ["2026-10-19","Demo Groupe Mutuel","Groupe Mutuel Assurances GMA SA","demo+","verified","Demo account","","i"],
+ ["2026-10-19","Jean Dupont","—","flacker.com","unverified","Direct","","k"],
+ ["2026-10-19","Bruno Batista e Silva","Cheminées d'Entremont SA","cheminees-entremont.ch","active","Direct","","k"],
+ ["2026-10-19","Maximilian Ludwig","IQUL","iqul.de","active","Direct","","k"],
+ ["2026-10-18","Lothar Hallay","afuwebweare GmbH","afuwebweare.ch","active","Direct","","k"]
+];
+
+// [lastVisit, name, city, country, employees, pricingViews, sessions, pages, score, cross]
+const LUSHA = [
+ ["2026-11-13","Burkhalter Technics AG","Zurich","CH",191,1,1,"DE","26",""],
+ ["2026-11-12","Pichler Architects","Bolzano","IT",14,1,1,"DE","26",""],
+ ["2026-11-11","NUOVOLab SA","Lugano","CH",11,2,2,"IT, EN","32","Preview lead 11 Nov"],
+ ["2026-11-11","Creative Stage Geneva","Geneva","CH",null,3,3,"DE ×2, EN","33",""],
+ ["2026-11-08","Novaton","Zurich","CH",null,1,1,"FR","23",""],
+ ["2026-11-06","Marti Group","Moosseedorf","CH",445,1,1,"FR","21",""],
+ ["2026-11-05","Emch+Berger Group","Bern","CH",616,3,2,"EN ×2, DE","31","Preview leads 10 + 14 Nov"],
+ ["2026-11-05","Artificialy","Lugano","CH",58,1,1,"EN","21",""],
+ ["2026-11-05","STOTZ DECOR AG","Bonstetten","CH",7,1,1,"DE","21",""],
+ ["2026-11-02","Die Welt in Farbe AG","Winterthur","CH",8,1,1,"DE","18",""],
+ ["2026-10-31","Supertrends","Zug","CH",27,1,1,"DE","17",""],
+ ["2026-10-30","HICO Group AG","Zurich","CH",81,1,1,"DE","16","Sign-up 30 Oct"],
+ ["2026-10-29","NEGXT AG","Kreuzlingen","CH",29,1,1,"DE","16",""],
+ ["2026-10-26","Aveniq","Baden","CH",485,1,1,"DE","13","CRM demo_booked · Preview 26 Oct"],
+ ["2026-10-26","1.618 Capital AG","Zug","CH",null,4,2,"DE ×2, EN ×2","30",""],
+ ["2026-10-22","Physiotherapiepraxis Im Dorf","Spreitenbach","CH",1,1,1,"DE","11",""],
+ ["2026-10-20","ESTEE LAUDER","(visit from NL)","US",1699,1,1,"DE","9",""],
+ ["2026-10-19","Sandrini Metalli","Costa Volpino","IT",80,4,2,"IT ×4","22","Inbound lead (Oct)"],
+ ["2026-10-19","FORTYSEVEN Baden","Baden","CH",27,1,1,"FR","8",""]
+];
+
+/* ---------- HELPERS ---------- */
+const $ = s => document.querySelector(s);
+const fmt = iso => { const [y,m,d] = iso.split("-"); return `${d}.${m}.${y.slice(2)}`; };
+function el(tag, cls, text){ const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
+function pill(text, kind){ return el("span","pill p-"+kind,text); }
+
+const STAGE_P = {identified:"mute",contacted:"info",replied:"info",demo_booked:"navy",trial_active:"ok"};
+const SIG_P = {"Clicked into a tender":"info","First preview open":"mute","Follow-up overdue":"warn"};
+const FUN = {active:["active","ok"],verified:["verified, inactive","warn"],unverified:["not verified","mute"]};
+
+/* ---------- STATE ---------- */
+let view = "preview";
+let q = "";
+const filt = { preview:"All", signups:"Companies" };
+
+function makeChips(id, list, key){
+  const box = $(id); box.innerHTML="";
+  list.forEach(l=>{
+    const b = el("button","chip",l); b.setAttribute("aria-pressed", filt[key]===l);
+    b.addEventListener("click",()=>{ filt[key]=l; makeChips(id,list,key); render(); });
+    box.appendChild(b);
+  });
+}
+const match = arr => !q || arr.join(" ").toLowerCase().includes(q);
+
+function render(){
+  // PREVIEW
+  const tp = $("#t-preview"); tp.innerHTML="";
+  let rows = PREVIEW.filter(r=> match(r)).filter(r=>{
+    const f = filt.preview;
+    if(f==="All") return true;
+    if(f==="Tender clicked") return r[3]==="Clicked into a tender";
+    if(f==="Follow-up overdue") return r[3]==="Follow-up overdue";
+    if(f==="No owner") return !r[5];
+    return true;
+  });
+  rows.forEach(r=>{
+    const tr=document.createElement("tr");
+    tr.append(el("td","mono",fmt(r[0])));
+    const c=el("td"); c.append(el("div","co",r[1]), el("div","small mono",r[2])); tr.append(c);
+    const s=el("td"); s.append(pill(r[3], SIG_P[r[3]]||"mute")); tr.append(s);
+    const st=el("td"); st.append(pill(r[4], STAGE_P[r[4]]||"mute")); tr.append(st);
+    tr.append(el("td","", r[5]||"—"));
+    tr.append(el("td","mono small", r[6]||"—"));
+    tr.append(el("td","small", r[7]||"—"));
+    tp.append(tr);
+  });
+  if(!rows.length){ const tr=document.createElement("tr"); const td=el("td","empty","No results"); td.colSpan=7; tr.append(td); tp.append(tr); }
+
+  // SIGNUPS
+  const ts = $("#t-signups"); ts.innerHTML="";
+  let srows = SIGNUPS.filter(r=>match(r)).filter(r=>{
+    const f=filt.signups;
+    if(f==="Companies") return r[7]==="k";
+    if(f==="Active") return r[7]==="k" && r[4]==="active";
+    if(f==="From preview") return r[5].startsWith("Preview");
+    if(f==="Trial running") return /Trial until|Repeat/.test(r[6]);
+    if(f==="Demo / internal") return r[7]==="i";
+    return true;
+  });
+  srows.forEach(r=>{
+    const tr=document.createElement("tr");
+    tr.append(el("td","mono",fmt(r[0])));
+    tr.append(el("td","co",r[2]));
+    tr.append(el("td","",r[1]));
+    tr.append(el("td","mono small",r[3]));
+    const f=FUN[r[4]]; const st=el("td"); st.append(pill(f[0],f[1])); tr.append(st);
+    const h=el("td"); h.append(pill(r[5], r[5].startsWith("Preview")?"info":(r[5]==="Team seat"?"navy":"mute"))); tr.append(h);
+    tr.append(el("td","small",r[6]||"—"));
+    ts.append(tr);
+  });
+  if(!srows.length){ const tr=document.createElement("tr"); const td=el("td","empty","No results"); td.colSpan=7; tr.append(td); ts.append(tr); }
+
+  // LUSHA
+  const tl = $("#t-lusha"); tl.innerHTML="";
+  let lrows = LUSHA.filter(r=>match(r));
+  lrows.forEach(r=>{
+    const tr=document.createElement("tr");
+    tr.append(el("td","mono",fmt(r[0])));
+    tr.append(el("td","co",r[1]));
+    tr.append(el("td","",r[2]+" · "+r[3]));
+    tr.append(el("td","num mono",r[4]==null?"—":String(r[4])));
+    tr.append(el("td","num mono",String(r[5])));
+    tr.append(el("td","num mono",String(r[6])));
+    tr.append(el("td","small",r[7]));
+    tr.append(el("td","num mono",r[8]));
+    const x=el("td"); if(r[9]) x.append(pill(r[9],"info")); else x.textContent="—"; tr.append(x);
+    tl.append(tr);
+  });
+  if(!lrows.length){ const tr=document.createElement("tr"); const td=el("td","empty","No results"); td.colSpan=9; tr.append(td); tl.append(tr); }
+
+  $("#c-preview").textContent = PREVIEW.length;
+  $("#c-signups").textContent = SIGNUPS.filter(r=>r[7]==="k").length;
+  $("#c-lusha").textContent = LUSHA.length;
+}
+
+/* ---------- SEGMENTED CONTROL (spring-like thumb, starts from current position) ---------- */
+const seg = $("#seg"), thumb = $("#thumb");
+function moveThumb(btn){
+  const r = btn.getBoundingClientRect(), p = seg.getBoundingClientRect();
+  thumb.style.width = r.width+"px";
+  thumb.style.transform = `translateX(${r.left - p.left - 3}px)`;
+}
+seg.querySelectorAll("button").forEach(b=>{
+  b.addEventListener("pointerdown",()=>moveThumb(b)); // respond on press
+  b.addEventListener("click",()=>{
+    view=b.dataset.v;
+    seg.querySelectorAll("button").forEach(x=>x.setAttribute("aria-selected", x===b));
+    document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on", v.id==="v-"+view));
+    moveThumb(b);
+    try{ history.replaceState(null,"","#"+view); }catch(e){}
+  });
+});
+$("#q").addEventListener("input",e=>{ q=e.target.value.trim().toLowerCase(); render(); });
+window.addEventListener("resize",()=>moveThumb(seg.querySelector('[aria-selected="true"]')));
+
+/* ---------- INIT ---------- */
+$("#k-unowned").textContent = 51 - 1; // hot queue: 1 entry with owner (LAND Suisse / Merlin)
+makeChips("#f-preview",["All","Tender clicked","Follow-up overdue","No owner"],"preview");
+makeChips("#f-signups",["Companies","Active","From preview","Trial running","Demo / internal","All"],"signups");
+render();
+const start = (location.hash||"").slice(1);
+const startBtn = seg.querySelector(`[data-v="${start}"]`) || seg.querySelector('[data-v="preview"]');
+requestAnimationFrame(()=>{ startBtn.click();
+  const max = 855;
+  document.querySelectorAll(".fbar").forEach(b=> b.style.transform = `scaleX(${(+b.dataset.v)/max})`);
+});
+</script>
+</body>
+</html>
